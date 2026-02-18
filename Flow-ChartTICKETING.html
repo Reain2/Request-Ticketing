@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FacilityTicketing — System Flowcharts</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f1a;
+    --surface: #111827;
+    --surface2: #1a2236;
+    --border: #1e2d45;
+    --accent: #f59e0b;
+    --accent2: #3b82f6;
+    --accent3: #10b981;
+    --accent4: #ef4444;
+    --text: #e2e8f0;
+    --muted: #4b6077;
+    --muted2: #2a3a50;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 40px 60px 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .header-top {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 32px;
+  }
+  .logo {
+    font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .logo span { color: var(--accent); }
+  h1 {
+    font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 800;
+    letter-spacing: -0.03em; color: #fff;
+  }
+  h1 em { color: var(--accent); font-style: normal; }
+  .subtitle { font-size: 14px; color: var(--muted); margin-top: 6px; }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex; gap: 2px; margin-top: 24px;
+  }
+  .tab {
+    padding: 12px 22px; font-size: 13px; font-weight: 600;
+    font-family: 'Syne', sans-serif; letter-spacing: 0.02em;
+    background: transparent; border: none; color: var(--muted);
+    cursor: pointer; border-bottom: 2px solid transparent;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ── MAIN ── */
+  main { padding: 40px 60px 60px; }
+
+  .panel { display: none; }
+  .panel.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── SECTION TITLE ── */
+  .section-label {
+    font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800;
+    color: #fff; margin-bottom: 6px; letter-spacing: -0.02em;
+  }
+  .section-desc {
+    font-size: 13.5px; color: var(--muted); line-height: 1.65;
+    max-width: 640px; margin-bottom: 36px;
+  }
+
+  /* ── FLOWCHART PRIMITIVES ── */
+  .flow {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 0;
+  }
+  .flow-row {
+    display: flex; align-items: center; gap: 0;
+  }
+  .flow-col {
+    display: flex; flex-direction: column; align-items: center; gap: 0;
+  }
+
+  /* Nodes */
+  .node {
+    position: relative;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 13px; font-weight: 500;
+    text-align: center;
+    min-width: 140px;
+    line-height: 1.35;
+    border: 1.5px solid;
+    transition: transform 0.15s;
+    cursor: default;
+  }
+  .node:hover { transform: scale(1.03); }
+  .node small {
+    display: block; font-size: 10.5px; font-weight: 400;
+    font-family: 'JetBrains Mono', monospace; margin-top: 3px; opacity: 0.65;
+  }
+
+  .node-start   { background: #0f172a; border-color: var(--accent); color: var(--accent); font-family: 'Syne', sans-serif; font-weight: 700; }
+  .node-action  { background: var(--surface2); border-color: var(--border); color: var(--text); }
+  .node-decision{ background: #1a2a1a; border-color: #2d5a2d; color: #4ade80; font-family: 'Syne', sans-serif; font-weight: 600; }
+  .node-output  { background: #1a1a2e; border-color: #2d2d5a; color: #818cf8; }
+  .node-db      { background: #1e1a0f; border-color: #4a3a10; color: var(--accent); }
+  .node-error   { background: #1e0f0f; border-color: #5a1a1a; color: #f87171; }
+  .node-success { background: #0f1e14; border-color: #1a5a2a; color: #4ade80; }
+  .node-user    { background: #0f1620; border-color: #1a3a5a; color: #60a5fa; }
+  .node-admin   { background: #1e160f; border-color: #5a3a10; color: var(--accent); }
+  .node-middle  { background: var(--surface2); border-color: var(--muted2); color: #94a3b8; }
+  .node-status-open       { background: #0f1620; border-color: #1e3a6e; color: #60a5fa; }
+  .node-status-inprogress { background: #1e160a; border-color: #5a3a10; color: var(--accent); }
+  .node-status-resolved   { background: #0a1e10; border-color: #1a5a28; color: #4ade80; }
+  .node-status-closed     { background: #141414; border-color: #333; color: #6b7280; }
+
+  /* Connectors */
+  .arrow-down {
+    width: 1.5px; height: 28px; background: var(--muted2);
+    position: relative; margin: 0 auto; flex-shrink: 0;
+  }
+  .arrow-down::after {
+    content: '';
+    position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%);
+    border-left: 5px solid transparent; border-right: 5px solid transparent;
+    border-top: 7px solid var(--muted2);
+  }
+  .arrow-right {
+    width: 36px; height: 1.5px; background: var(--muted2);
+    position: relative; flex-shrink: 0;
+  }
+  .arrow-right::after {
+    content: '';
+    position: absolute; right: -5px; top: 50%; transform: translateY(-50%);
+    border-top: 5px solid transparent; border-bottom: 5px solid transparent;
+    border-left: 7px solid var(--muted2);
+  }
+  .arrow-accent { background: var(--accent); }
+  .arrow-accent::after { border-top-color: transparent; border-bottom-color: transparent; border-left-color: var(--accent); }
+  .arrow-down.arrow-accent::after { border-left-color: transparent; border-right-color: transparent; border-top-color: var(--accent); }
+  .arrow-blue { background: var(--accent2); }
+  .arrow-blue::after { border-left-color: var(--accent2); }
+  .arrow-down.arrow-blue::after { border-left-color: transparent; border-right-color: transparent; border-top-color: var(--accent2); }
+  .arrow-green { background: var(--accent3); }
+  .arrow-green::after { border-left-color: var(--accent3); }
+  .arrow-down.arrow-green::after { border-left-color: transparent; border-right-color: transparent; border-top-color: var(--accent3); }
+
+  /* Labels on connectors */
+  .label-yes { font-size: 10px; font-weight: 700; font-family: 'Syne', sans-serif; color: var(--accent3); letter-spacing: 0.05em; margin: 0 6px; }
+  .label-no  { font-size: 10px; font-weight: 700; font-family: 'Syne', sans-serif; color: #f87171; letter-spacing: 0.05em; margin: 0 6px; }
+
+  /* ── GRID LAYOUTS ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; align-items: start; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 28px;
+  }
+  .card-title {
+    font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
+    letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted);
+    margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+  }
+  .card-title-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+
+  /* ── LEGEND ── */
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 12px;
+    margin-bottom: 28px;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 12px; color: var(--muted);
+  }
+  .legend-box {
+    width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid;
+  }
+
+  /* ── STATUS FLOW ── */
+  .status-track {
+    display: flex; align-items: center; gap: 0;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 28px 36px; overflow-x: auto;
+  }
+  .status-node {
+    text-align: center; min-width: 110px;
+  }
+  .status-bubble {
+    width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    border: 2px solid;
+  }
+  .status-name { font-size: 12.5px; font-weight: 600; color: var(--text); }
+  .status-desc { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  .status-arrow {
+    flex: 1; height: 1.5px; background: var(--muted2); min-width: 32px;
+    position: relative; flex-shrink: 0;
+  }
+  .status-arrow::after {
+    content: '';
+    position: absolute; right: -5px; top: 50%; transform: translateY(-50%);
+    border-top: 5px solid transparent; border-bottom: 5px solid transparent;
+    border-left: 7px solid var(--muted2);
+  }
+  .status-arrow-label {
+    position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
+    font-size: 9.5px; font-family: 'JetBrains Mono', monospace;
+    color: var(--muted); white-space: nowrap;
+  }
+
+  /* ── REQUEST LAYERS ── */
+  .layer-stack {
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .layer {
+    display: flex; align-items: center; gap: 16px;
+    padding: 14px 20px; border-radius: 10px; border: 1px solid;
+    position: relative;
+  }
+  .layer-num {
+    font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 800;
+    width: 24px; text-align: center; flex-shrink: 0;
+  }
+  .layer-name { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; min-width: 120px; }
+  .layer-detail { font-size: 12.5px; color: var(--muted); }
+  .layer-code { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 4px; margin-left: auto; flex-shrink: 0; }
+
+  .layer-request { background: #0f1620; border-color: #1a3a5a; }
+  .layer-request .layer-num { color: #60a5fa; }
+  .layer-router  { background: #160f20; border-color: #3a1a5a; }
+  .layer-router .layer-num { color: #a78bfa; }
+  .layer-mw     { background: #1a150a; border-color: #5a3a10; }
+  .layer-mw .layer-num { color: var(--accent); }
+  .layer-ctrl   { background: #0a1620; border-color: #1a3a5a; }
+  .layer-ctrl .layer-num { color: #38bdf8; }
+  .layer-policy { background: #0a160d; border-color: #1a3a1e; }
+  .layer-policy .layer-num { color: #4ade80; }
+  .layer-model  { background: #1e160a; border-color: #5a3a10; }
+  .layer-model .layer-num { color: var(--accent); }
+  .layer-db     { background: #1e1a0a; border-color: #4a3a10; }
+  .layer-db .layer-num { color: var(--accent); }
+  .layer-view   { background: #0a1616; border-color: #1a3a3a; }
+  .layer-view .layer-num { color: #2dd4bf; }
+
+  .layer-connector {
+    width: 1px; height: 12px; background: var(--muted2); margin-left: 31px;
+  }
+
+  /* ── DB SCHEMA ── */
+  .schema-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  }
+  .schema-table {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden;
+  }
+  .schema-header {
+    background: var(--surface2); padding: 10px 14px;
+    font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .schema-header-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .schema-field {
+    padding: 7px 14px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px;
+    border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; gap: 8px;
+    color: #94a3b8;
+  }
+  .schema-field:last-child { border-bottom: none; }
+  .schema-field .field-name { color: var(--text); }
+  .schema-field .field-type { color: var(--muted); font-size: 10.5px; }
+  .schema-field .field-key { color: var(--accent); font-size: 10px; font-weight: 500; }
+
+  /* ── RELATION ARROWS ── */
+  .rel-row {
+    display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; font-size: 12.5px;
+  }
+  .rel-from { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--accent); }
+  .rel-arrow { color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+  .rel-to { font-family: 'Syne', sans-serif; font-weight: 700; color: #60a5fa; }
+  .rel-type { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 4px; color: #4ade80; margin-left: auto; }
+
+  /* ── COMPACT FLOW ── */
+  .inline-flow {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  }
+  .inline-node {
+    padding: 7px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 500;
+    border: 1px solid; white-space: nowrap;
+  }
+  .inline-arrow { font-size: 14px; color: var(--muted); flex-shrink: 0; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    header, main { padding-left: 20px; padding-right: 20px; }
+    .two-col, .three-col { grid-template-columns: 1fr; }
+    .schema-grid { grid-template-columns: 1fr 1fr; }
+    h1 { font-size: 26px; }
+    .status-track { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .status-arrow { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="logo">Facility<span>Ticketing</span></div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);">System Documentation v1.0</div>
+  </div>
+  <h1>How It <em>Works</em></h1>
+  <p class="subtitle">A visual walkthrough of the system's logic, request lifecycle, and data flow</p>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showPanel('overview')">System Overview</button>
+    <button class="tab" onclick="showPanel('request')">Request Lifecycle</button>
+    <button class="tab" onclick="showPanel('userflow')">User Flows</button>
+    <button class="tab" onclick="showPanel('ticket')">Ticket Lifecycle</button>
+    <button class="tab" onclick="showPanel('database')">Database & Relations</button>
+  </div>
+</header>
+
+<main>
+
+<!-- ═══════════════════════════════════════════════
+     PANEL 1 — SYSTEM OVERVIEW
+═══════════════════════════════════════════════ -->
+<div class="panel active" id="panel-overview">
+  <div class="section-label">Panel 01</div>
+  <div class="section-title">System Overview</div>
+  <p class="section-desc">
+    FacilityTicketing has two user roles and two separated route groups. Every request passes through Laravel's routing layer, middleware guards, and a Policy before any data is touched.
+  </p>
+
+  <!-- Big picture 3 zones -->
+  <div style="display:grid;grid-template-columns:200px 1fr 200px;gap:24px;align-items:center;margin-bottom:40px;">
+
+    <!-- Left: Actors -->
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="card-title"><div class="card-title-dot" style="background:#60a5fa;"></div>Actors</div>
+      <div class="node node-user" style="min-width:0;">
+        Regular User
+        <small>reporter</small>
+      </div>
+      <div style="text-align:center;font-size:11px;color:var(--muted);padding:4px 0;">OR</div>
+      <div class="node node-admin" style="min-width:0;">
+        Admin
+        <small>is_admin = true</small>
+      </div>
+    </div>
+
+    <!-- Middle: System -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0;">
+      <div class="node node-action" style="width:100%;max-width:520px;margin-bottom:0;">
+        Browser Request
+        <small>GET /tickets or POST /tickets or GET /admin/tickets ...</small>
+      </div>
+      <div class="arrow-down" style="height:20px;"></div>
+
+      <div style="width:100%;max-width:520px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:12px;">
+        <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Laravel Application</div>
+
+        <div class="inline-flow">
+          <div class="inline-node node-action">routes/web.php</div>
+          <div class="inline-arrow">→</div>
+          <div class="inline-node node-action">Middleware</div>
+          <div class="inline-arrow">→</div>
+          <div class="inline-node node-action">Controller</div>
+          <div class="inline-arrow">→</div>
+          <div class="inline-node node-action">Policy</div>
+          <div class="inline-arrow">→</div>
+          <div class="inline-node node-db">Eloquent / DB</div>
+          <div class="inline-arrow">→</div>
+          <div class="inline-node node-output">Blade View</div>
+        </div>
+
+        <div style="border-top:1px solid var(--border);padding-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="background:rgba(96,165,250,0.07);border:1px solid #1a3a5a;border-radius:8px;padding:10px 12px;">
+            <div style="font-size:10px;font-weight:700;font-family:'Syne',sans-serif;text-transform:uppercase;letter-spacing:.06em;color:#60a5fa;margin-bottom:6px;">User Routes</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#94a3b8;line-height:1.8;">
+              GET /tickets<br>
+              GET /tickets/create<br>
+              POST /tickets<br>
+              GET /tickets/{id}
+            </div>
+          </div>
+          <div style="background:rgba(245,158,11,0.07);border:1px solid #4a3a10;border-radius:8px;padding:10px 12px;">
+            <div style="font-size:10px;font-weight:700;font-family:'Syne',sans-serif;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin-bottom:6px;">Admin Routes</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#94a3b8;line-height:1.8;">
+              GET /admin/tickets<br>
+              GET /admin/tickets/{id}<br>
+              PUT /admin/tickets/{id}<br>
+              GET /admin/reports
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow-down" style="height:20px;"></div>
+      <div class="node node-db" style="width:100%;max-width:520px;">
+        MySQL Database
+        <small>users · tickets · ticket_images · fix_images · comments</small>
+      </div>
+    </div>
+
+    <!-- Right: Output -->
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="card-title"><div class="card-title-dot" style="background:#4ade80;"></div>Response</div>
+      <div class="node node-output" style="min-width:0;">
+        Blade HTML
+        <small>rendered view</small>
+      </div>
+      <div style="text-align:center;font-size:11px;color:var(--muted);padding:4px 0;">OR</div>
+      <div class="node node-output" style="min-width:0;">
+        File Download
+        <small>CSV / PDF export</small>
+      </div>
+      <div style="text-align:center;font-size:11px;color:var(--muted);padding:4px 0;">OR</div>
+      <div class="node node-error" style="min-width:0;">
+        403 Abort
+        <small>unauthorized</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Two key middleware rules -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+    <div class="card">
+      <div class="card-title"><div class="card-title-dot" style="background:var(--accent);"></div>Auth Middleware</div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:14px;">
+        Every route inside <code style="font-family:'JetBrains Mono',monospace;color:var(--accent);">middleware(['auth'])</code> requires the user to be logged in. If not, they're redirected to <code style="font-family:'JetBrains Mono',monospace;color:#94a3b8;">/login</code>.
+      </p>
+      <div class="flow" style="align-items:flex-start;gap:0;">
+        <div class="node node-action" style="min-width:0;width:100%;text-align:left;">Request hits route</div>
+        <div class="arrow-down"></div>
+        <div class="node node-decision" style="min-width:0;width:100%;text-align:left;">auth()->check()?</div>
+        <div style="display:flex;width:100%;gap:12px;margin-top:0;">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+            <div class="arrow-down arrow-green" style="height:20px;"></div>
+            <span class="label-yes" style="margin:0;">YES</span>
+            <div class="arrow-down arrow-green" style="height:16px;"></div>
+            <div class="node node-success" style="min-width:0;width:100%;font-size:12px;">Continue to controller</div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+            <div class="arrow-down" style="background:#f87171;height:20px;"></div>
+            <div class="arrow-down" style="background:#f87171;height:0;"></div>
+            <span class="label-no" style="margin:0;">NO</span>
+            <div class="arrow-down" style="background:#f87171;height:16px;"></div>
+            <div class="node node-error" style="min-width:0;width:100%;font-size:12px;">Redirect → /login</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><div class="card-title-dot" style="background:var(--accent);"></div>Admin Middleware</div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:14px;">
+        Admin routes additionally require <code style="font-family:'JetBrains Mono',monospace;color:var(--accent);">middleware('admin')</code>. This checks the <code style="font-family:'JetBrains Mono',monospace;color:#94a3b8;">is_admin</code> boolean column on the user.
+      </p>
+      <div class="flow" style="align-items:flex-start;gap:0;">
+        <div class="node node-action" style="min-width:0;width:100%;">Authenticated user</div>
+        <div class="arrow-down"></div>
+        <div class="node node-decision" style="min-width:0;width:100%;text-align:left;">user->is_admin?</div>
+        <div style="display:flex;width:100%;gap:12px;margin-top:0;">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+            <div class="arrow-down arrow-green" style="height:20px;"></div>
+            <span class="label-yes" style="margin:0;">YES</span>
+            <div class="arrow-down arrow-green" style="height:16px;"></div>
+            <div class="node node-admin" style="min-width:0;width:100%;font-size:12px;">Access admin routes</div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+            <div class="arrow-down" style="background:#f87171;height:20px;"></div>
+            <span class="label-no" style="margin:0;">NO</span>
+            <div class="arrow-down" style="background:#f87171;height:16px;"></div>
+            <div class="node node-error" style="min-width:0;width:100%;font-size:12px;">abort(403) — denied</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     PANEL 2 — REQUEST LIFECYCLE
+═══════════════════════════════════════════════ -->
+<div class="panel" id="panel-request">
+  <div class="section-label">Panel 02</div>
+  <div class="section-title">Request Lifecycle</div>
+  <p class="section-desc">
+    What happens between a user clicking a link and seeing a page — every layer Laravel passes through in order, top to bottom.
+  </p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start;">
+    <!-- Left: layer stack -->
+    <div>
+      <div class="card-title" style="margin-bottom:16px;"><div class="card-title-dot" style="background:#60a5fa;"></div>Example: GET /admin/tickets/{id}</div>
+      <div class="layer-stack">
+
+        <div class="layer layer-request">
+          <div class="layer-num">1</div>
+          <div>
+            <div class="layer-name" style="color:#60a5fa;">HTTP Request</div>
+            <div class="layer-detail">Browser sends GET to the server</div>
+          </div>
+          <div class="layer-code" style="color:#60a5fa;">browser</div>
+        </div>
+        <div class="layer-connector"></div>
+
+        <div class="layer layer-router">
+          <div class="layer-num">2</div>
+          <div>
+            <div class="layer-name" style="color:#a78bfa;">Router</div>
+            <div class="layer-detail">routes/web.php matches the URL pattern</div>
+          </div>
+          <div class="layer-code" style="color:#a78bfa;">web.php</div>
+        </div>
+        <div class="layer-connector"></div>
+
+        <div class="layer layer-mw">
+          <div class="layer-num">3</div>
+          <div>
+            <div class="layer-name" style="color:var(--accent);">auth middleware</div>
+            <div class="layer-detail">Is the user logged in? If not → /login</div>
+          </div>
+          <div class="layer-code" style="color:var(--accent);">Authenticate.php</div>
+        </div>
+        <div class="layer-connector"></div>
+
+        <div class="layer layer-mw">
+          <div class="layer-num">4</div>
+          <div>
+            <div class="layer-name" style="color:var(--accent);">admin middleware</div>
+            <div class="layer-detail">Is is_admin = true? If not → 403</div>
+          </div>
+          <div class="layer-code" style="color:var(--accent);">AdminMiddleware.php</div>
+        </div>
+        <div class="layer-connector"></div>
+
+        <div class="layer layer-ctrl">
+          <div class="layer-num">5</div>
+          <div>
+            <div class="layer-name" style="color:#38bdf8;">Controller method</div>
+            <div class="layer-detail">AdminTicketController@show is called</div>
+          </div>
+          <div class="layer-code" style="color:#38bdf8;">AdminTicketController</div>
+        </div>
+        <div class="layer-connector"></div>
+
+        <div class="layer layer-policy">
+          <div class="layer-num">6</div>
+          <div>
+            <div class="layer-name" style="color:#4ade80;">Policy check</div>
+            <div class="layer-detail">Gate::authorize('view', $ticket) — admin always passes</div>
+          </div>
+          <div class="layer-code" style="color:#4ade80;">TicketPolicy.php</div>
+        </div>
+        <div class="layer-connector"></div>
+
+        <div class="layer layer-model">
+          <div class="layer-num">7</div>
+          <div>
+            <div class="layer-name" style="color:var(--accent);">Eloquent Model</div>
+            <div class="layer-detail">Ticket::with([...]) fetches data + relationships</div>
+          </div>
+          <div class="layer-code" style="color:var(--accent);">Ticket.php</div>
+        </div>
+        <div class="layer-connector"></div>
+
+        <div class="layer layer-db">
+          <div class="layer-num">8</div>
+          <div>
+            <div class="layer-name" style="color:var(--accent);">MySQL Query</div>
+            <div class="layer-detail">SELECT + JOINs on tickets, images, comments</div>
+          </div>
+          <div class="layer-code" style="color:var(--accent);">MySQL</div>
+        </div>
+        <div class="layer-connector"></div>
+
+        <div class="layer layer-view">
+          <div class="layer-num">9</div>
+          <div>
+            <div class="layer-name" style="color:#2dd4bf;">Blade View</div>
+            <div class="layer-detail">admin/tickets/show.blade.php renders HTML</div>
+          </div>
+          <div class="layer-code" style="color:#2dd4bf;">show.blade.php</div>
+        </div>
+        <div class="layer-connector"></div>
+
+        <div class="layer layer-request">
+          <div class="layer-num">10</div>
+          <div>
+            <div class="layer-name" style="color:#60a5fa;">HTTP Response</div>
+            <div class="layer-detail">200 OK — HTML sent back to browser</div>
+          </div>
+          <div class="layer-code" style="color:#60a5fa;">browser</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Right: POST flow (form submit) -->
+    <div>
+      <div class="card-title" style="margin-bottom:16px;"><div class="card-title-dot" style="background:var(--accent);"></div>Example: POST /tickets (submit ticket)</div>
+      <div class="layer-stack">
+
+        <div class="layer layer-request">
+          <div class="layer-num">1</div>
+          <div>
+            <div class="layer-name" style="color:#60a5fa;">Form Submit</div>
+            <div class="layer-detail">POST with title, description, photos[]</div>
+          </div>
+          <div class="layer-code" style="color:#60a5fa;">browser</div>
+        </div>
+        <div class="layer-connector"></div>
+
+        <div class="layer layer-router">
+          <div class="layer-num">2</div>
+          <div>
+            <div class="layer-name" style="color:#a78bfa;">Router</div>
+            <div class="layer-detail">POST /tickets → TicketController@store</div>
+          </div>
+          <div class="layer-code" style="color:#a78bfa;">web.php</div>
+        </div>
+        <div class="layer-connector"></div>
+
+        <div class="layer layer-mw">
+          <div class="layer-num">3</div>
+          <div>
+            <div class="layer-name" style="color:var(--accent);">CSRF + auth</div>
+            <div class="layer-detail">@csrf token verified, user must be logged in</div>
+          </div>
+          <div class="layer-code" style="color:var(--accent);">middleware</div>
+        </div>
+        <div class="layer-connector"></div>
+
+        <div class="layer layer-ctrl">
+          <div class="layer-num">4</div>
+          <div>
+            <div class="layer-name" style="color:#38bdf8;">Validation</div>
+            <div class="layer-detail">$request->validate([...]) — title, desc, photos rules</div>
+          </div>
+          <div class="layer-code" style="color:#38bdf8;">TicketController</div>
+        </div>
+        <div class="layer-connector"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;background:rgba(255,255,255,0.02);border:1px dashed var(--border);border-radius:10px;padding:12px;margin:2px 0;">
+          <div style="font-size:10px;font-family:'Syne',sans-serif;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);grid-column:1/-1;margin-bottom:6px;">On Validation Fail</div>
+          <div class="node node-error" style="min-width:0;font-size:11.5px;">Redirect back<br><small>with errors + old()</small></div>
+          <div style="font-size:11.5px;color:var(--muted);align-self:center;padding:8px;">@error tags display<br>messages in form</div>
+        </div>
+        <div class="layer-connector"></div>
+
+        <div class="layer layer-model">
+          <div class="layer-num">5</div>
+          <div>
+            <div class="layer-name" style="color:var(--accent);">Create Ticket</div>
+            <div class="layer-detail">auth()->user()->tickets()->create([...])</div>
+          </div>
+          <div class="layer-code" style="color:var(--accent);">Eloquent</div>
+        </div>
+        <div class="layer-connector"></div>
+
+        <div class="layer layer-model">
+          <div class="layer-num">6</div>
+          <div>
+            <div class="layer-name" style="color:var(--accent);">Store Images</div>
+            <div class="layer-detail">Each photo → storage/app/public/ticket-images/</div>
+          </div>
+          <div class="layer-code" style="color:var(--accent);">Storage::disk</div>
+        </div>
+        <div class="layer-connector"></div>
+
+        <div class="layer layer-view">
+          <div class="layer-num">7</div>
+          <div>
+            <div class="layer-name" style="color:#2dd4bf;">Flash + Redirect</div>
+            <div class="layer-detail">session('success') set → redirect to ticket detail</div>
+          </div>
+          <div class="layer-code" style="color:#2dd4bf;">302 redirect</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     PANEL 3 — USER FLOWS
+═══════════════════════════════════════════════ -->
+<div class="panel" id="panel-userflow">
+  <div class="section-label">Panel 03</div>
+  <div class="section-title">User Flows</div>
+  <p class="section-desc">
+    What each role can do — from login to every meaningful action in the system.
+  </p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;">
+
+    <!-- Regular User flow -->
+    <div class="card" style="border-color:#1a3a5a;">
+      <div class="card-title"><div class="card-title-dot" style="background:#60a5fa;"></div>Regular User (Reporter)</div>
+
+      <div class="flow">
+        <div class="node node-user" style="width:100%;">Visit /login</div>
+        <div class="arrow-down arrow-blue"></div>
+        <div class="node node-action" style="width:100%;">Enter email + password</div>
+        <div class="arrow-down arrow-blue"></div>
+        <div class="node node-decision" style="width:100%;">Credentials valid?</div>
+
+        <div style="display:flex;width:100%;gap:10px;margin:0;">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+            <div class="arrow-down" style="background:#f87171;height:24px;"></div>
+            <span class="label-no" style="margin:0;margin-bottom:4px;">FAIL</span>
+            <div class="node node-error" style="min-width:0;width:100%;font-size:12px;">Show error message</div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+            <div class="arrow-down arrow-green" style="height:24px;"></div>
+            <span class="label-yes" style="margin:0;margin-bottom:4px;">OK</span>
+            <div class="node node-success" style="min-width:0;width:100%;font-size:12px;">Redirect → /tickets</div>
+          </div>
+        </div>
+
+        <div class="arrow-down" style="height:16px;margin-top:8px;"></div>
+        <div class="node node-user" style="width:100%;">View My Tickets list<br><small>Only OWN tickets — scoped by user_id</small></div>
+        <div class="arrow-down"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;">
+          <div class="node node-action" style="min-width:0;font-size:12px;">Click "New Ticket"</div>
+          <div class="node node-action" style="min-width:0;font-size:12px;">Click a ticket row</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;margin-top:2px;">
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div class="arrow-down" style="height:16px;"></div>
+            <div class="node node-action" style="min-width:0;width:100%;font-size:12px;">
+              Fill form<br>
+              <small>title + desc + photos[]</small>
+            </div>
+            <div class="arrow-down"></div>
+            <div class="node node-decision" style="min-width:0;width:100%;font-size:12px;">Validation OK?</div>
+            <div class="arrow-down arrow-green" style="height:16px;"></div>
+            <div class="node node-success" style="min-width:0;width:100%;font-size:12px;">Ticket created<br><small>status = "open"</small></div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div class="arrow-down" style="height:16px;"></div>
+            <div class="node node-decision" style="min-width:0;width:100%;font-size:12px;">My ticket?</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;width:100%;">
+              <div style="display:flex;flex-direction:column;align-items:center;">
+                <div class="arrow-down arrow-green" style="height:14px;"></div>
+                <div class="node node-success" style="min-width:0;width:100%;font-size:11px;">Show detail</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;">
+                <div class="arrow-down" style="background:#f87171;height:14px;"></div>
+                <div class="node node-error" style="min-width:0;width:100%;font-size:11px;">403 abort</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;padding:12px 14px;background:rgba(96,165,250,0.06);border:1px solid #1a3a5a;border-radius:8px;">
+        <div style="font-size:10px;font-weight:700;font-family:'Syne',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#60a5fa;margin-bottom:8px;">What users CANNOT do</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.8;">
+          &times; See other users' tickets<br>
+          &times; Access any /admin/* route<br>
+          &times; Change ticket status<br>
+          &times; Upload fix photos<br>
+          &times; View reports
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin flow -->
+    <div class="card" style="border-color:#4a3a10;">
+      <div class="card-title"><div class="card-title-dot" style="background:var(--accent);"></div>Admin</div>
+
+      <div class="flow">
+        <div class="node node-admin" style="width:100%;">Login (is_admin = true)</div>
+        <div class="arrow-down arrow-accent"></div>
+        <div class="node node-action" style="width:100%;">Redirect → /admin/tickets<br><small>See ALL tickets from all users</small></div>
+        <div class="arrow-down"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;width:100%;">
+          <div class="node node-action" style="min-width:0;font-size:11px;padding:8px 10px;">Filter by status / search</div>
+          <div class="node node-action" style="min-width:0;font-size:11px;padding:8px 10px;">Click ticket → Manage</div>
+          <div class="node node-action" style="min-width:0;font-size:11px;padding:8px 10px;">Go to Reports</div>
+        </div>
+
+        <div class="arrow-down"></div>
+        <div class="node node-admin" style="width:100%;">Admin ticket detail page</div>
+        <div class="arrow-down"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+            <div class="node node-action" style="min-width:0;width:100%;font-size:11px;">Change status<br><small>open/in_progress/resolved/closed</small></div>
+            <div class="node node-action" style="min-width:0;width:100%;font-size:11px;">Add resolution note</div>
+            <div class="node node-action" style="min-width:0;width:100%;font-size:11px;">Upload fix photos</div>
+            <div class="node node-error" style="min-width:0;width:100%;font-size:11px;">Close ticket button<br><small>sets closed_at timestamp</small></div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+            <div class="node node-action" style="min-width:0;width:100%;font-size:11px;">Add comment / note</div>
+            <div class="arrow-down" style="height:14px;"></div>
+            <div class="node node-success" style="min-width:0;width:100%;font-size:11px;">Comment saved<br><small>visible to reporter</small></div>
+            <div class="arrow-down" style="height:14px;"></div>
+            <div class="node node-admin" style="min-width:0;width:100%;font-size:11px;">Reports page<br><small>filter → CSV or PDF</small></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;padding:12px 14px;background:rgba(245,158,11,0.06);border:1px solid #4a3a10;border-radius:8px;">
+        <div style="font-size:10px;font-weight:700;font-family:'Syne',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">What admins CAN do exclusively</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.8;">
+          &check; See every ticket regardless of reporter<br>
+          &check; Change status on any ticket<br>
+          &check; Upload proof-of-fix images<br>
+          &check; Close tickets with a timestamp<br>
+          &check; Export CSV and PDF reports<br>
+          &check; Filter tickets by date range + status
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     PANEL 4 — TICKET LIFECYCLE
+═══════════════════════════════════════════════ -->
+<div class="panel" id="panel-ticket">
+  <div class="section-label">Panel 04</div>
+  <div class="section-title">Ticket Lifecycle</div>
+  <p class="section-desc">
+    A ticket is born when a user submits a form and dies when an admin closes it. Between those two moments, it can move through four states — and an admin can jump to any of them freely.
+  </p>
+
+  <!-- Status track -->
+  <div style="margin-bottom:32px;">
+    <div class="status-track">
+      <div class="status-node">
+        <div class="status-bubble" style="background:#0d1b3a;border-color:#1e3a6e;color:#60a5fa;">OPEN</div>
+        <div class="status-name">Open</div>
+        <div class="status-desc">Ticket submitted<br>awaiting review</div>
+      </div>
+
+      <div class="status-arrow" style="margin:0 8px;position:relative;bottom:20px;">
+        <div class="status-arrow-label">admin reviews</div>
+      </div>
+
+      <div class="status-node">
+        <div class="status-bubble" style="background:#2a1a06;border-color:#6b3d10;color:var(--accent);">IN<br>PROG</div>
+        <div class="status-name">In Progress</div>
+        <div class="status-desc">Work has started<br>being fixed</div>
+      </div>
+
+      <div class="status-arrow" style="margin:0 8px;position:relative;bottom:20px;">
+        <div class="status-arrow-label">fix complete</div>
+      </div>
+
+      <div class="status-node">
+        <div class="status-bubble" style="background:#0a1f10;border-color:#1a5a28;color:#4ade80;">RES<br>OLVED</div>
+        <div class="status-name">Resolved</div>
+        <div class="status-desc">Fix done, proof<br>photos uploaded</div>
+      </div>
+
+      <div class="status-arrow" style="margin:0 8px;position:relative;bottom:20px;">
+        <div class="status-arrow-label">admin closes</div>
+      </div>
+
+      <div class="status-node">
+        <div class="status-bubble" style="background:#161616;border-color:#333;color:#6b7280;">CLSD</div>
+        <div class="status-name">Closed</div>
+        <div class="status-desc">closed_at set<br>terminal state</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- What happens at each status -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:32px;">
+    <div style="background:rgba(96,165,250,0.06);border:1px solid #1a3a5a;border-radius:10px;padding:16px;">
+      <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#60a5fa;margin-bottom:10px;">On Create</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.8;">
+        status = "open"<br>
+        user_id = auth()->id()<br>
+        closed_at = null<br>
+        Images stored to disk
+      </div>
+    </div>
+    <div style="background:rgba(245,158,11,0.06);border:1px solid #4a3a10;border-radius:10px;padding:16px;">
+      <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;">In Progress</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.8;">
+        Admin selects status<br>
+        Can add note<br>
+        Can upload fix photos<br>
+        closed_at still null
+      </div>
+    </div>
+    <div style="background:rgba(74,222,128,0.06);border:1px solid #1a5a28;border-radius:10px;padding:16px;">
+      <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#4ade80;margin-bottom:10px;">Resolved</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.8;">
+        resolution_note filled<br>
+        Fix photos uploaded<br>
+        Reporter can see<br>both note + photos
+      </div>
+    </div>
+    <div style="background:rgba(107,114,128,0.06);border:1px solid #333;border-radius:10px;padding:16px;">
+      <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6b7280;margin-bottom:10px;">Closed</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.8;">
+        closed_at = now()<br>
+        Set once, never reset<br>
+        "Close Ticket" button<br>hidden after close
+      </div>
+    </div>
+  </div>
+
+  <!-- The actual controller logic -->
+  <div class="card">
+    <div class="card-title"><div class="card-title-dot" style="background:#a78bfa;"></div>AdminTicketController@update — Step by Step</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+      <div class="flow" style="align-items:flex-start;">
+        <div class="node node-action" style="width:100%;">Admin submits update form<br><small>PUT /admin/tickets/{id}</small></div>
+        <div class="arrow-down"></div>
+        <div class="node node-action" style="width:100%;">$request->validate([...])<br><small>status, resolution_note, fix_images</small></div>
+        <div class="arrow-down"></div>
+        <div class="node node-decision" style="width:100%;">status === 'closed' AND no closed_at yet?</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;">
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div class="arrow-down arrow-green" style="height:18px;"></div>
+            <span class="label-yes" style="margin:0 0 4px;">YES</span>
+            <div class="node node-success" style="min-width:0;width:100%;font-size:12px;">closed_at = now()</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div class="arrow-down" style="height:18px;"></div>
+            <span class="label-no" style="margin:0 0 4px;">NO</span>
+            <div class="node node-middle" style="min-width:0;width:100%;font-size:12px;">closed_at unchanged</div>
+          </div>
+        </div>
+        <div class="arrow-down"></div>
+        <div class="node node-model" style="width:100%;background:#1e160a;border:1px solid #4a3a10;color:var(--accent);">$ticket->update($data)</div>
+      </div>
+      <div class="flow" style="align-items:flex-start;">
+        <div class="node node-action" style="width:100%;">↑ continued from left</div>
+        <div class="arrow-down"></div>
+        <div class="node node-decision" style="width:100%;">$request->hasFile('fix_images')?</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;">
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div class="arrow-down arrow-green" style="height:18px;"></div>
+            <span class="label-yes" style="margin:0 0 4px;">YES</span>
+            <div class="node node-success" style="min-width:0;width:100%;font-size:12px;">Loop → store each<br>→ create FixImage row</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div class="arrow-down" style="height:18px;"></div>
+            <span class="label-no" style="margin:0 0 4px;">NO</span>
+            <div class="node node-middle" style="min-width:0;width:100%;font-size:12px;">Skip image upload</div>
+          </div>
+        </div>
+        <div class="arrow-down"></div>
+        <div class="node node-success" style="width:100%;">redirect()->route('admin.tickets.show')<br><small>with('success', 'Updated')</small></div>
+        <div class="arrow-down"></div>
+        <div class="node node-view" style="width:100%;background:#0a1616;border:1px solid #1a3a3a;color:#2dd4bf;">Flash message shown in layout<br><small>session('success') consumed</small></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     PANEL 5 — DATABASE & RELATIONS
+═══════════════════════════════════════════════ -->
+<div class="panel" id="panel-database">
+  <div class="section-label">Panel 05</div>
+  <div class="section-title">Database & Relations</div>
+  <p class="section-desc">
+    Five tables. All relationships use foreign keys with cascadeOnDelete — deleting a ticket removes its images and comments automatically.
+  </p>
+
+  <!-- Schema -->
+  <div class="schema-grid" style="margin-bottom:32px;">
+
+    <div class="schema-table">
+      <div class="schema-header"><div class="schema-header-dot" style="background:#60a5fa;"></div><span style="color:#60a5fa;">users</span></div>
+      <div class="schema-field"><span class="field-name">id</span><div><span class="field-key">PK</span> <span class="field-type">bigint</span></div></div>
+      <div class="schema-field"><span class="field-name">name</span><span class="field-type">varchar</span></div>
+      <div class="schema-field"><span class="field-name">email</span><span class="field-type">varchar unique</span></div>
+      <div class="schema-field"><span class="field-name">password</span><span class="field-type">varchar hashed</span></div>
+      <div class="schema-field"><span class="field-name">is_admin</span><span class="field-type">boolean default:0</span></div>
+      <div class="schema-field"><span class="field-name">created_at</span><span class="field-type">timestamp</span></div>
+    </div>
+
+    <div class="schema-table">
+      <div class="schema-header"><div class="schema-header-dot" style="background:var(--accent);"></div><span style="color:var(--accent);">tickets</span></div>
+      <div class="schema-field"><span class="field-name">id</span><div><span class="field-key">PK</span> <span class="field-type">bigint</span></div></div>
+      <div class="schema-field"><span class="field-name">user_id</span><div><span class="field-key">FK</span> <span class="field-type">bigint</span></div></div>
+      <div class="schema-field"><span class="field-name">title</span><span class="field-type">varchar</span></div>
+      <div class="schema-field"><span class="field-name">description</span><span class="field-type">text</span></div>
+      <div class="schema-field"><span class="field-name">status</span><span class="field-type">enum(4 values)</span></div>
+      <div class="schema-field"><span class="field-name">resolution_note</span><span class="field-type">text nullable</span></div>
+      <div class="schema-field"><span class="field-name">closed_at</span><span class="field-type">timestamp nullable</span></div>
+    </div>
+
+    <div class="schema-table">
+      <div class="schema-header"><div class="schema-header-dot" style="background:#2dd4bf;"></div><span style="color:#2dd4bf;">ticket_images</span></div>
+      <div class="schema-field"><span class="field-name">id</span><div><span class="field-key">PK</span> <span class="field-type">bigint</span></div></div>
+      <div class="schema-field"><span class="field-name">ticket_id</span><div><span class="field-key">FK</span> <span class="field-type">bigint cascade</span></div></div>
+      <div class="schema-field"><span class="field-name">path</span><span class="field-type">varchar (storage)</span></div>
+      <div class="schema-field"><span class="field-name">original_name</span><span class="field-type">varchar</span></div>
+    </div>
+
+    <div class="schema-table">
+      <div class="schema-header"><div class="schema-header-dot" style="background:#4ade80;"></div><span style="color:#4ade80;">fix_images</span></div>
+      <div class="schema-field"><span class="field-name">id</span><div><span class="field-key">PK</span> <span class="field-key">bigint</span></div></div>
+      <div class="schema-field"><span class="field-name">ticket_id</span><div><span class="field-key">FK</span> <span class="field-type">bigint cascade</span></div></div>
+      <div class="schema-field"><span class="field-name">path</span><span class="field-type">varchar (storage)</span></div>
+      <div class="schema-field"><span class="field-name">original_name</span><span class="field-type">varchar</span></div>
+    </div>
+
+    <div class="schema-table">
+      <div class="schema-header"><div class="schema-header-dot" style="background:#f87171;"></div><span style="color:#f87171;">comments</span></div>
+      <div class="schema-field"><span class="field-name">id</span><div><span class="field-key">PK</span> <span class="field-type">bigint</span></div></div>
+      <div class="schema-field"><span class="field-name">ticket_id</span><div><span class="field-key">FK</span> <span class="field-type">bigint cascade</span></div></div>
+      <div class="schema-field"><span class="field-name">user_id</span><div><span class="field-key">FK</span> <span class="field-type">bigint</span></div></div>
+      <div class="schema-field"><span class="field-name">body</span><span class="field-type">text</span></div>
+      <div class="schema-field"><span class="field-name">created_at</span><span class="field-type">timestamp</span></div>
+    </div>
+
+    <!-- Legend box -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px;">
+      <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Legend</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;">
+        <span style="font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:11px;">PK</span>
+        <span style="color:var(--muted);">Primary Key — auto increment</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;">
+        <span style="font-family:'JetBrains Mono',monospace;color:#60a5fa;font-size:11px;">FK</span>
+        <span style="color:var(--muted);">Foreign Key — references parent</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;">
+        <span style="font-family:'JetBrains Mono',monospace;color:#4ade80;font-size:11px;">cascade</span>
+        <span style="color:var(--muted);">Delete parent → delete children</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Eloquent relationships -->
+  <div class="card">
+    <div class="card-title"><div class="card-title-dot" style="background:var(--accent);"></div>Eloquent Relationships</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="rel-row">
+        <span class="rel-from">User</span>
+        <span class="rel-arrow">——→</span>
+        <span class="rel-to">Ticket</span>
+        <span class="rel-type">hasMany</span>
+      </div>
+      <div class="rel-row">
+        <span class="rel-from">Ticket</span>
+        <span class="rel-arrow">——→</span>
+        <span class="rel-to">User</span>
+        <span class="rel-type">belongsTo</span>
+      </div>
+      <div class="rel-row">
+        <span class="rel-from">Ticket</span>
+        <span class="rel-arrow">——→</span>
+        <span class="rel-to">TicketImage</span>
+        <span class="rel-type">hasMany</span>
+      </div>
+      <div class="rel-row">
+        <span class="rel-from">Ticket</span>
+        <span class="rel-arrow">——→</span>
+        <span class="rel-to">FixImage</span>
+        <span class="rel-type">hasMany</span>
+      </div>
+      <div class="rel-row">
+        <span class="rel-from">Ticket</span>
+        <span class="rel-arrow">——→</span>
+        <span class="rel-to">Comment</span>
+        <span class="rel-type">hasMany</span>
+      </div>
+      <div class="rel-row">
+        <span class="rel-from">Comment</span>
+        <span class="rel-arrow">——→</span>
+        <span class="rel-to">User</span>
+        <span class="rel-type">belongsTo</span>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;padding:16px;background:rgba(0,0,0,0.2);border-radius:8px;">
+      <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Why two image tables instead of one?</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7;">
+        <strong style="color:var(--text);">ticket_images</strong> = photos attached by the <em style="color:#60a5fa;">reporter</em> when submitting the ticket — evidence of the problem.<br><br>
+        <strong style="color:var(--text);">fix_images</strong> = photos uploaded by the <em style="color:var(--accent);">admin</em> after the fix — proof that the work was done.<br><br>
+        Keeping them separate means you can query, display, and delete them independently without any type-flag filtering. A single polymorphic table would work too but adds indirection.
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
